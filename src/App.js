@@ -5,10 +5,13 @@ import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import SearchBar from "./SearchBar/SearchBar";
 import ImageGalleryItem from "./ImageGalleryItem/ImageGalleryItem";
+import ImageGallery from "./ImageGallery/ImageGallery"
+import Modal from './Modal'
 
 export default class App extends Component {
   state = {
     keyword: "",
+    showModal: false,
   };
   handleFormSubmit = (keyword) => {
     console.log(keyword);
@@ -16,12 +19,11 @@ export default class App extends Component {
   };
   render() {
     return (
-      <div>
+      <div className='App'>
         <SearchBar onSubmit={this.handleFormSubmit} />
-        <p>Yo're looking for: {this.state.keyword}</p>
-        <ul>
-          <ImageGalleryItem request={this.state.keyword} />
-        </ul>
+
+        <Modal />
+        <ImageGallery request={this.state.keyword} />
         <ToastContainer autoClose={3000} />
       </div>
     );
