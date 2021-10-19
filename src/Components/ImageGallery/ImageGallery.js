@@ -29,12 +29,21 @@ export default class ImageGallery extends Component {
         const prevInputValue = prevProps.request;
         const nextInputValue = this.props.request;
 
-        if (prevInputValue !== nextInputValue || prevPage !== nextPage) {
-            this.setState({ status: 'pending' })
+        if (prevInputValue !== nextInputValue || prevPage < nextPage) {
+            if (prevInputValue !== nextInputValue) {
+                this.newSearch()
+            }
+            this.setState({ status: 'pending', })
             fetchPictures(nextInputValue, baseApi, APIkey, page)
 
                 .then((data) => {
-                    this.setState({ pictures: [...data], status: 'resolve' });
+                    if (prevInputValue === nextInputValue) { this.setState({ pictures: [...prevState.pictures, ...data], status: 'resolve' }) };
+                    if (prevInputValue !== nextInputValue) {
+                        this.setState({
+                            pictures: []
+                        })
+                        this.setState({ pictures: [...data], status: 'resolve', })
+                    };
                     window.scrollTo({
                         top: document.documentElement.scrollHeight,
                         behavior: 'smooth',
@@ -67,8 +76,16 @@ export default class ImageGallery extends Component {
     onLoadMoreClick = () => {
         this.setState({
             page: this.state.page + 1,
+
         });
     };
+
+    newSearch = () => {
+        this.setState({
+            page: 1
+        });
+    }
+
 
     render() {
         const { pictures, status, } = this.state
@@ -77,8 +94,13 @@ export default class ImageGallery extends Component {
             return <div></div>;
         }
         if (status === 'pending') {
+
             return (
-                <Loader type="TailSpin" color="#00BFFF" height={80} width={80} />
+                <>
+                    <ul className={s.ImageGallery}>
+                        <ImageGalleryItem pictures={pictures} chosenPic={this.chosePic} toggleModal={this.toggleModal} />
+                    </ul>
+                    <Loader type="TailSpin" color="#00BFFF" height={80} width={80} /></>
             );
         }
         if (status === 'rejected') {

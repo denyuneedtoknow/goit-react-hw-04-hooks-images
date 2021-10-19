@@ -22,6 +22,9 @@ export default class SearchBar extends Component {
     this.props.onSubmit(this.state.keyword);
     this.setState({ keyword: "" });
   };
+
+
+
   render() {
     return (
       <header className={s.Searchbar}>
