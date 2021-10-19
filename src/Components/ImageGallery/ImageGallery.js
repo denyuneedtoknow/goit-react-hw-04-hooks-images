@@ -1,27 +1,46 @@
 import s from "./ImageGallery.module.css";
+import PropTypes from 'prop-types';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem'
 import { Component } from "react";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
 import Modal from '../Modal'
+import { fetchPictures } from '../Services/PicFinderAPI';
+import Button from '../Button/Button'
+
+
 
 
 export default class ImageGallery extends Component {
     state = {
+        baseApi: 'https://pixabay.com/api/',
+        APIkey: '22968833-cf9b798f42870513c2372fa03',
+        page: 1,
         pictures: [],
         chosenPic: '',
         showModal: false,
         status: 'idle',
     };
 
-    componentDidUpdate(prevProps) {
-        const APIkey = "22968833-cf9b798f42870513c2372fa03";
-        const SearchUrl = `https://pixabay.com/api/?key=${APIkey}&q=${this.props.request}&image_type=photo`;
-        if (prevProps.request !== this.props.request) {
+    componentDidUpdate(prevProps, prevState) {
+        const { baseApi, APIkey, page } = this.state
+        const prevPage = prevState.page;
+        const nextPage = page;
+        const prevInputValue = prevProps.request;
+        const nextInputValue = this.props.request;
+
+        if (prevInputValue !== nextInputValue || prevPage !== nextPage) {
             this.setState({ status: 'pending' })
-            fetch(SearchUrl)
-                .then((response) => { if (response.ok) { return response.json() } })
-                .then((pics) => this.setState({ pictures: pics.hits, status: 'resolve' }))
+            fetchPictures(nextInputValue, baseApi, APIkey, page)
+
+                .then((data) => {
+                    this.setState({ pictures: [...data], status: 'resolve' });
+                    window.scrollTo({
+                        top: document.documentElement.scrollHeight,
+                        behavior: 'smooth',
+                    });
+                })
+
                 .catch(err => {
                     this.setState({ error: err, status: 'rejected' })
                 })
@@ -29,28 +48,13 @@ export default class ImageGallery extends Component {
 
 
     }
-    // loadMore = () => {
-    //     newFetchPhotos.page += 1;
-    //     newFetchPhotos.fetchPhotos().then(response => {
-    //         this.setState(prevState => ({
-    //             searchResults: [...prevState.searchResults, ...response.hits],
-    //         }));
-
-    //         window.scrollTo({
-    //             top: document.querySelector('.ImageGallery').scrollHeight,
-    //             behavior: 'smooth',
-    //         });
-    //     });
-    // };
-
-
 
 
     chosePic = e => {
         this.setState({
             chosenPic: e.target.dataset.source,
         });
-        console.log(this.state.chosenPic);
+
     };
 
     toggleModal = () => {
@@ -60,7 +64,11 @@ export default class ImageGallery extends Component {
     };
 
 
-
+    onLoadMoreClick = () => {
+        this.setState({
+            page: this.state.page + 1,
+        });
+    };
 
     render() {
         const { pictures, status, } = this.state
@@ -76,7 +84,7 @@ export default class ImageGallery extends Component {
         if (status === 'rejected') {
             return (
                 <div>
-                    <p>Sorry, no matches found</p>
+                    <div className={s.rejection}>Sorry, no matches found</div>
                 </div>
             )
         }
@@ -85,7 +93,7 @@ export default class ImageGallery extends Component {
             if (pictures.length === 0) {
                 return (
                     <div>
-                        <p>Sorry, no matches found</p>
+                        <div className={s.rejection}>Sorry, no matches found</div>
                     </div>
                 )
             }
@@ -101,8 +109,13 @@ export default class ImageGallery extends Component {
                             <img className="modalImage" src={this.state.chosenPic} alt="" />
                         </Modal>
                     )}
+                    <Button onLoadMoreClick={this.onLoadMoreClick} />
                 </>
             );
         }
     }
 }
+
+ImageGallery.propTypes = {
+    request: PropTypes.string,
+};

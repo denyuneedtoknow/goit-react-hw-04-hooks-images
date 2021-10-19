@@ -3,8 +3,8 @@ import { Component } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
-import SearchBar from "./SearchBar/SearchBar";
-import ImageGallery from "./ImageGallery/ImageGallery"
+import SearchBar from "./Components/SearchBar";
+import ImageGallery from "./Components/ImageGallery/ImageGallery"
 
 
 export default class App extends Component {

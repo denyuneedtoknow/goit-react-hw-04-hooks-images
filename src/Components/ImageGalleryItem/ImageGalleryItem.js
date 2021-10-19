@@ -1,4 +1,4 @@
-
+import PropTypes from 'prop-types';
 import s from "./ImageGalleryItem.module.css";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
@@ -17,3 +17,11 @@ export default function ImageGalleryItem({ pictures, chosenPic, toggleModal }) {
       })}
     </>)
 }
+
+ImageGalleryItem.propTypes = {
+  webformatURL: PropTypes.string,
+  tags: PropTypes.string,
+  toggleModal: PropTypes.func,
+  chosenPic: PropTypes.func,
+  largeImageURL: PropTypes.string,
+};
