@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default class SearchBar extends Component {
   state = {
     keyword: "",
+
   };
   handleKeywordChange = (event) => {
     this.setState({ keyword: event.currentTarget.value.toLowerCase() });

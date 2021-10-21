@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
-export function fetchPictures(nextInputValue, baseApi, APIkey, page) {
+export function fetchPictures(nextInputValue, baseApi, APIkey, nextPage) {
 
     return axios
         .get(
-            `${baseApi}?key=${APIkey}&page=${page}&q=${nextInputValue}&image_type=photo`
+            `${baseApi}?key=${APIkey}&page=${nextPage}&q=${nextInputValue}&image_type=photo&per_page=12`
         )
         .then(r => { return r.data.hits });
 

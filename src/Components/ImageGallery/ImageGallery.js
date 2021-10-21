@@ -23,18 +23,20 @@ export default class ImageGallery extends Component {
     };
 
     componentDidUpdate(prevProps, prevState) {
-        const { baseApi, APIkey, page } = this.state
+        const { baseApi, APIkey, } = this.state
         const prevPage = prevState.page;
-        const nextPage = page;
+        let nextPage = null;
         const prevInputValue = prevProps.request;
         const nextInputValue = this.props.request;
+        if (prevInputValue !== nextInputValue) {
+            nextPage = this.props.page
+        } else { nextPage = this.state.page }
 
-        if (prevInputValue !== nextInputValue || prevPage < nextPage) {
-            if (prevInputValue !== nextInputValue) {
-                this.newSearch()
-            }
+
+        if (prevInputValue !== nextInputValue || prevPage !== nextPage) {
+
             this.setState({ status: 'pending', })
-            fetchPictures(nextInputValue, baseApi, APIkey, page)
+            fetchPictures(nextInputValue, baseApi, APIkey, nextPage)
 
                 .then((data) => {
                     if (prevInputValue === nextInputValue) { this.setState({ pictures: [...prevState.pictures, ...data], status: 'resolve' }) };

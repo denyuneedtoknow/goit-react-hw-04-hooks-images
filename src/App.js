@@ -15,14 +15,15 @@ export default class App extends Component {
   };
   handleFormSubmit = (keyword) => {
     this.setState({ keyword });
-    this.setState({ page: 1 });
+    this.setState({ page: 1 })
+
   };
   render() {
     return (
       <div className='App'>
         <SearchBar onSubmit={this.handleFormSubmit} />
 
-        <ImageGallery request={this.state.keyword} pageCounter={this.page} />
+        <ImageGallery request={this.state.keyword} startPage={this.state.page} />
         <ToastContainer autoClose={3000} />
       </div>
     );
