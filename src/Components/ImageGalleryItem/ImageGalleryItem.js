@@ -13,7 +13,7 @@ export default function ImageGalleryItem({ pictures, chosenPic, toggleModal }) {
   return (
     <>
       {pictures.map((pic) => {
-        return (<li onClick={onItemClick} key={pic.id} className={s.ImageGalleryItem}><img src={pic.webformatURL} alt={pic.tags} data-source={pic.largeImageURL} className={s.ImageGalleryItemPic} /></li>)
+        return (<li onClick={onItemClick} key={pic.webformatURL} className={s.ImageGalleryItem}><img src={pic.webformatURL} alt={pic.tags} data-source={pic.largeImageURL} className={s.ImageGalleryItemPic} /></li>)
       })}
     </>)
 }

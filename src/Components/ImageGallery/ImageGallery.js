@@ -1,7 +1,7 @@
 import s from "./ImageGallery.module.css";
 import PropTypes from 'prop-types';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem'
-import { Component } from "react";
+import { useState, useEffect } from "react";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
 import Modal from '../Modal'
@@ -9,103 +9,92 @@ import { fetchPictures } from '../Services/PicFinderAPI';
 import Button from '../Button/Button'
 
 
+const baseApi = 'https://pixabay.com/api/';
+const APIkey = '22968833-cf9b798f42870513c2372fa03';
+function ImageGallery({ request, startPage }) {
+
+    const [page, setPage] = useState(startPage);
+    const [pictures, setPictures] = useState([]);
+    const [chosenPic, setChosenPic] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [status, setStatus] = useState('idle')
+    const [error, setError] = useState(null);
+    const [searchValue, setSearchValue] = useState('')
 
 
-export default class ImageGallery extends Component {
-    state = {
-        baseApi: 'https://pixabay.com/api/',
-        APIkey: '22968833-cf9b798f42870513c2372fa03',
-        page: 1,
-        pictures: [],
-        chosenPic: '',
-        showModal: false,
-        status: 'idle',
-    };
+    useEffect(() => {
 
-    componentDidUpdate(prevProps, prevState) {
-        const { baseApi, APIkey, } = this.state
-        const prevPage = prevState.page;
-        let nextPage = null;
-        const prevInputValue = prevProps.request;
-        const nextInputValue = this.props.request;
-        if (prevInputValue !== nextInputValue) {
-            nextPage = this.props.page
-        } else { nextPage = this.state.page }
+        if (!request) {
+            return;
+        }
+        setSearchValue(request)
 
+        if (request !== searchValue) {
+            setPage(1)
 
-        if (prevInputValue !== nextInputValue || prevPage !== nextPage) {
-
-            this.setState({ status: 'pending', })
-            fetchPictures(nextInputValue, baseApi, APIkey, nextPage)
-
-                .then((data) => {
-                    if (prevInputValue === nextInputValue) { this.setState({ pictures: [...prevState.pictures, ...data], status: 'resolve' }) };
-                    if (prevInputValue !== nextInputValue) {
-                        this.setState({
-                            pictures: []
-                        })
-                        this.setState({ pictures: [...data], status: 'resolve', })
-                    };
-                    window.scrollTo({
-                        top: document.documentElement.scrollHeight,
-                        behavior: 'smooth',
-                    });
-                })
-
-                .catch(err => {
-                    this.setState({ error: err, status: 'rejected' })
-                })
+            console.log(`${searchValue} for ${request}`);
         }
 
+        setStatus('pending')
 
+        fetchPictures(request, baseApi, APIkey, page)
+
+            .then((data) => {
+                if (page !== 1) { setPictures([...pictures, ...data]) }
+                else { setPictures([...data]) }
+                setStatus('resolve')
+                window.scrollTo({
+                    top: document.documentElement.scrollHeight,
+                    behavior: 'smooth',
+                });
+            }).catch(error => {
+                setStatus('rejected');
+                setError(error)
+            });
+    }, [request, page, searchValue,])
+
+
+
+
+    const chosePic = e => {
+        setChosenPic(e.target.dataset.source)
+    };
+
+    const toggleModal = () => {
+        setShowModal(!showModal)
+
+    };
+
+    const onLoadMoreClick = () => {
+        setPage(page + 1)
+
+    };
+
+
+    if (status === 'idle') {
+        return <div></div>;
     }
 
+    if (status === 'pending') {
 
-    chosePic = e => {
-        this.setState({
-            chosenPic: e.target.dataset.source,
-        });
-
-    };
-
-    toggleModal = () => {
-        this.setState({
-            showModal: !this.state.showModal,
-        });
-    };
-
-
-    onLoadMoreClick = () => {
-        this.setState({
-            page: this.state.page + 1,
-
-        });
-    };
-
-    newSearch = () => {
-        this.setState({
-            page: 1
-        });
+        return (
+            <>
+                <ul className={s.ImageGallery}>
+                    <ImageGalleryItem pictures={pictures} chosenPic={chosePic} toggleModal={toggleModal} />
+                </ul>
+                <Loader type="TailSpin" color="#00BFFF" height={80} width={80} /></>
+        );
     }
 
-
-    render() {
-        const { pictures, status, } = this.state
-
-        if (status === 'idle') {
-            return <div></div>;
-        }
-        if (status === 'pending') {
-
-            return (
-                <>
-                    <ul className={s.ImageGallery}>
-                        <ImageGalleryItem pictures={pictures} chosenPic={this.chosePic} toggleModal={this.toggleModal} />
-                    </ul>
-                    <Loader type="TailSpin" color="#00BFFF" height={80} width={80} /></>
-            );
-        }
-        if (status === 'rejected') {
+    if (status === 'rejected') {
+        return (
+            <div>
+                <div className={s.rejection}>{error}</div>
+            </div>
+        )
+    }
+    if (status === 'resolve') {
+        if (pictures.length === 0) {
             return (
                 <div>
                     <div className={s.rejection}>Sorry, no matches found</div>
@@ -113,33 +102,24 @@ export default class ImageGallery extends Component {
             )
         }
 
-        if (status === 'resolve') {
-            if (pictures.length === 0) {
-                return (
-                    <div>
-                        <div className={s.rejection}>Sorry, no matches found</div>
-                    </div>
-                )
-            }
-
-            return (
-                <>
-                    <ul className={s.ImageGallery}>
-
-                        <ImageGalleryItem pictures={pictures} chosenPic={this.chosePic} toggleModal={this.toggleModal} />
-                    </ul>
-                    {this.state.showModal && (
-                        <Modal toggleModal={this.toggleModal}>
-                            <img className="modalImage" src={this.state.chosenPic} alt="" />
-                        </Modal>
-                    )}
-                    <Button onLoadMoreClick={this.onLoadMoreClick} />
-                </>
-            );
-        }
+        return (
+            <>
+                <ul className={s.ImageGallery}>
+                    <ImageGalleryItem pictures={pictures} chosenPic={chosePic} toggleModal={toggleModal} />
+                </ul>
+                {showModal && (
+                    <Modal toggleModal={toggleModal}>
+                        <img className="modalImage" src={chosenPic} alt="" />
+                    </Modal>
+                )}
+                <Button onLoadMoreClick={onLoadMoreClick} />
+            </>
+        );
     }
 }
 
 ImageGallery.propTypes = {
     request: PropTypes.string,
 };
+
+export default ImageGallery
