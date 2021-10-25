@@ -13,13 +13,14 @@ const baseApi = 'https://pixabay.com/api/';
 const APIkey = '22968833-cf9b798f42870513c2372fa03';
 function ImageGallery({ request, startPage }) {
 
-    const [page, setPage] = useState(startPage);
+    const [page, setPage] = useState(1);
     const [pictures, setPictures] = useState([]);
     const [chosenPic, setChosenPic] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [status, setStatus] = useState('idle')
     const [error, setError] = useState(null);
     const [searchValue, setSearchValue] = useState('')
+
 
 
     useEffect(() => {
@@ -32,7 +33,6 @@ function ImageGallery({ request, startPage }) {
         if (request !== searchValue) {
             setPage(1)
 
-            console.log(`${searchValue} for ${request}`);
         }
 
         setStatus('pending')
@@ -40,19 +40,16 @@ function ImageGallery({ request, startPage }) {
         fetchPictures(request, baseApi, APIkey, page)
 
             .then((data) => {
-                if (page !== 1) { setPictures([...pictures, ...data]) }
-                else { setPictures([...data]) }
+                if (page === 1) {
+                    setPictures([...data])
+                }
                 setStatus('resolve')
-                window.scrollTo({
-                    top: document.documentElement.scrollHeight,
-                    behavior: 'smooth',
-                });
+
             }).catch(error => {
                 setStatus('rejected');
                 setError(error)
             });
-    }, [request, page, searchValue,])
-
+    }, [searchValue, request, page])
 
 
 
@@ -65,8 +62,17 @@ function ImageGallery({ request, startPage }) {
 
     };
 
+
     const onLoadMoreClick = () => {
         setPage(page + 1)
+        fetchPictures(request, baseApi, APIkey, page + 1).then((data) => {
+            setPictures([...pictures, ...data])
+            setStatus('resolve')
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth',
+            });
+        })
 
     };
 
