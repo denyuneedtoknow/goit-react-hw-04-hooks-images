@@ -5,25 +5,22 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
-function SearchBar(handleFormSubmit) {
+function SearchBar({ onSubmit }) {
 
     const [keyword, setKeyword] = useState('')
 
-
-
     const handleKeywordChange = (event) => {
         setKeyword(event.currentTarget.value.toLowerCase());
-        console.log(keyword);
+
     };
     const handleSubmit = (e) => {
         e.preventDefault();
         if (keyword.trim() === "") {
             toast.error("Enter something!");
-
             return;
         }
+        onSubmit(keyword);
 
-        handleFormSubmit(keyword);
         setKeyword("");
     };
 
